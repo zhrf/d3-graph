@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .node-text {
+            font-size: 12px;
+            /* stroke:red; */
+        }
+        .edgelabel {
+            color:#aaa;
+        }
+    </style>
+</head>
+<body>
+    <h2>关系图展示</h2>
+    <script src="./js/plugins/d3/d3.v3.min.js"></script>
+    <script>
+          const CONFIG = {
+            SVG_WIDTH : 800,
+            SVG_HEIGHT: 800,
+            IMG_WIDTH :80,
+            IMG_HEIGHT:80,
+            NODE_CIRCLE_RADIUS : {
+                    0 : 33 ,
+                    1 : 28 ,
+                    2 : 22
+                },
+            NODE_CIRCLE_BORDER : {
+                    0 : '#C81B5A',
+                    1 : '#456FB4' ,
+                    2 : '#363636'
+            },
+            LINE_COLOR : {
+                    0 : '#C81B5A',
+                    1 : '#456FB4',
+                    2 : '#363636',
+                },
+
+          }     
+            var data = {
+                nodes:[
+                    {name:'微博账号1',img:'./images/weibo.png',group:'0'},
+                    {name:'文章1',img:'./images/pkq.jpg',group:'1'},
+                    {name:'微博账号2',img:'./images/weibo.png',group:'1'},
+                    {name:'微博账号3',img:'./images/weibo.png',group:'1'},
+                    {name:'文章2',img:'./images/pkq.jpg',group:'1'},
+                    {name:'文章3',img:'./images/pkq.jpg',group:'1'},
+                    {name:'微信账号1',img:'./images/weixin.jpg',group:'1'},
+                    {name:'微博账号4',img:'./images/weibo.png',group:'1'},
+                    {name:'微信账号2',img:'./images/weixin.jpg',group:'2'},
+                    {name:'微信账号3',img:'./images/weixin.jpg',group:'2'},
+                    {name:'QQ账号1',img:'./images/QQ.jpg',group:'2'},
+                    {name:'QQ账号2',img:'./images/QQ.jpg',group:'2'},
+                    {name:'文章4',img:'./images/pkq.jpg',group:'2'},
+                    {name:'文章5',img:'./images/pkq.jpg',group:'2'}
+                ],
+                links:[
+                    { "source": 0 , "target": 1 , "relation":"转发" },
+                    { "source": 0 , "target": 2 , "relation":"转发" },
+                    { "source": 0 , "target": 3 , "relation":"点赞" },
+                    { "source": 0 , "target": 4 , "relation":"评论" },
+                    { "source": 0 , "target": 5 , "relation":"转发" },
+                    { "source": 3 , "target": 6 , "relation":"点赞" },
+                    { "source": 4 , "target": 6 , "relation":"转发" },
+                    { "source": 5 , "target": 7 , "relation":"评论" },
+                    { "source": 5 , "target": 8 , "relation":"点赞" },
+                    { "source": 2 , "target": 9 , "relation":"转发" },
+                    { "source": 2 , "target": 10 , "relation":"点赞" },
+                    { "source": 1 , "target": 8 , "relation":"点赞" },
+                    { "source": 1 , "target": 11 , "relation":"点赞" },
+                    { "source": 11 , "target": 0 , "relation":"点赞" },
+                    { "source": 1 , "target": 12 , "relation":"点赞" },
+                    { "source": 2 , "target": 13 , "relation":"点赞" },
+                ]
+            }
+            
+            var force = d3.layout.force()
+                .nodes(data.nodes)          //设定节点数组
+                .links(data.links)          //设定连线数组
+                .size([CONFIG.SVG_WIDTH, CONFIG.SVG_HEIGHT])      //作用域的大小
+                .linkDistance(180)          //连接线长度
+                .charge(-1500)              //顶点的电荷数。该参数决定是排斥还是吸引，数值越小越互相排斥
+                .on("tick", tick)        //指时间间隔，隔一段时间刷新一次画面
+                .start();                   //开始转换
+
+            // 插入svg元素并设置宽高
+            var svg = d3.select('body').append('svg')
+                    .attr('width',CONFIG.SVG_WIDTH)
+                    .attr('height',CONFIG.SVG_HEIGHT)
+                    .style('background','rgb(240, 248, 255)');
+            
+            //箭头
+            var marker = svg.append("marker")
+                //.attr("id", function(d) { return d; })
+                .attr("id", "resolved")
+                .attr("markerUnits","strokeWidth")//设置为strokeWidth箭头会随着线的粗细发生变化
+                .attr("markerUnits","userSpaceOnUse")
+                .attr("viewBox", "0 -5 10 10")//坐标系的区域
+                .attr("refX",32)//箭头坐标
+                .attr("refY", -1)
+                .attr("markerWidth", 12)//标识的大小
+                .attr("markerHeight", 12)
+                .attr("orient", "auto")//绘制方向，可设定为：auto（自动确认方向）和 角度值
+                .attr("stroke-width",2)//箭头宽度
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")//箭头的路径
+                .attr('fill','#650d0d');//箭头颜色
+
+            // 插入连接线
+            var edges_line = svg.append('g').selectAll('.edges-line')
+                    .data(force.links())
+                    .enter()
+                    .append('path')
+                    .attr({
+                        'class':'edges-line',
+                        'id':function(d,i) {
+                            return 'edgepath'+i;
+                        },
+                        // 'marker-end':'url(#resolved)'  //设置带有箭头
+                    })
+                    .style({
+                        'pointer-events':'none',
+                        'stroke':function(link){
+                            return CONFIG.LINE_COLOR[link.source.group];
+                        },
+                        'stroke-width':'2'
+                    })
+            // 插入连接线文本
+            var edges_text = svg.append("g").selectAll(".edgelabel")
+                    .data(force.links())
+                    .enter()
+                    .append("text")
+                    .style("pointer-events", "none")
+                    .attr({  'class':'edgelabel',
+                                'dx':80,
+                                'dy':-5,
+                                'font-size':12,
+                                // 'fill':'#aaa',
+                                })
+                        
+            edges_text.append('textPath')
+                      .attr('xlink:href',function(d,i) {return '#edgepath'+i})
+                      .style("pointer-events", "none")
+                      .text(function(d){return d.relation;});
+ 
+            // 插入圆圈节点
+            var nodes = svg.append('g').selectAll('circle')
+                    .data(force.nodes())
+                    .enter()
+                    .append('circle')
+                    .attr({
+                        'class':'circle-node',
+                        'r':function(node){
+                            return CONFIG.NODE_CIRCLE_RADIUS[node.group];       
+                        },
+                        'fill':function(d,i){
+                            var img_def = svg.append('defs').attr('id','imgdef')
+                            var catpattern = img_def.append("pattern")
+                                                            .attr("id", "catpattern" + i)
+                                                            .attr("height", 1)
+                                                            .attr("width", 1)
+
+                                    catpattern.append("image")
+                                            .attr("x", - (CONFIG.IMG_WIDTH / 2 - CONFIG.NODE_CIRCLE_RADIUS[d.group]))
+                                            .attr("y", - (CONFIG.IMG_HEIGHT / 2 - CONFIG.NODE_CIRCLE_RADIUS[d.group]))
+                                            .attr("width", CONFIG.IMG_WIDTH)
+                                            .attr("height", CONFIG.IMG_HEIGHT)
+                                            .attr("xlink:href", d.img)
+
+                                    return "url(#catpattern" + i + ")";
+                        },
+                        'stroke':function(node){
+                            return CONFIG.NODE_CIRCLE_BORDER[node.group];
+                        },
+                        'stroke-width':'4'
+                    })
+                   .on('click',function(node){
+                        edges_line.style({
+                            'stroke-width':function(link){
+                                if(link.source.name === node.name || link.target.name === node.name) {
+                                    return '4';
+                                }
+                                else {
+                                    return '2';
+                                }
+                            }
+                        }
+                    )
+                   }) 
+                    .call(force.drag)
+
+            // 插入节点文本
+            var node_text = svg.append('g').selectAll('text')
+                    .data(force.nodes())
+                    .enter()
+                    .append('text')
+                    .attr({
+                        'id':function(d,i){
+                            return 'nodetext' + i;
+                        },
+                        'class':'node-text',
+                        'text-anchor':'middle',
+                        'dy':42,
+                    })
+                    .text(function(node){
+                        return node.name
+                    })
+
+
+            // 实时更新视图
+            function tick() {
+                nodes.attr("transform", transform1);
+
+                edges_line.attr('d', function(d) { 
+                    var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y;
+                    return path;
+                });  
+                    
+                edges_text.attr('transform',function(d,i){
+                        if (d.target.x<d.source.x){
+                            bbox = this.getBBox();
+                            rx = bbox.x+bbox.width/2;
+                            ry = bbox.y+bbox.height/2;
+                            return 'rotate(180 '+rx+' '+ry+')';
+                        }
+                        else {
+                            return 'rotate(0)';
+                        }
+                });
+                node_text.attr('transform', transform1);
+            }
+
+            function transform1(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            }
+    </script>
+</body>
+</html>
