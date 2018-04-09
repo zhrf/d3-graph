@@ -4,37 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./styles/style.css">
     <title>Document</title>
-    <style>
-        .node-text {
-            font-size: 12px;
-            /* stroke:red; */
-        }
-        .edgelabel {
-            color:#aaa;
-        }
-    </style>
 </head>
 <body>
     <h2>关系图展示</h2>
     <script src="./js/plugins/d3/d3.v3.min.js"></script>
     <script>
           const CONFIG = {
-            SVG_WIDTH : 800,
-            SVG_HEIGHT: 800,
-            IMG_WIDTH :80,
-            IMG_HEIGHT:80,
-            NODE_CIRCLE_RADIUS : {
+            SVG_WIDTH : 800,            //svg元素宽度
+            SVG_HEIGHT: 800,            //svg元素高度
+            IMG_WIDTH :80,              //图片宽度
+            IMG_HEIGHT:80,              //图片高度  
+            NODE_CIRCLE_RADIUS : {      //圆圈节点半径 适应不同群体
                     0 : 33 ,
                     1 : 28 ,
                     2 : 22
                 },
-            NODE_CIRCLE_BORDER : {
+            NODE_CIRCLE_BORDER : {      //圆圈节点边距 适应不同群体
                     0 : '#C81B5A',
                     1 : '#456FB4' ,
                     2 : '#363636'
             },
-            LINE_COLOR : {
+            LINE_COLOR : {              //连接线颜色 适应不同群体
                     0 : '#C81B5A',
                     1 : '#456FB4',
                     2 : '#363636',
@@ -91,7 +83,6 @@
             var svg = d3.select('body').append('svg')
                     .attr('width',CONFIG.SVG_WIDTH)
                     .attr('height',CONFIG.SVG_HEIGHT)
-                    .style('background','rgb(240, 248, 255)');
             
             //箭头
             var marker = svg.append("marker")
@@ -138,8 +129,6 @@
                     .attr({  'class':'edgelabel',
                                 'dx':80,
                                 'dy':-5,
-                                'font-size':12,
-                                // 'fill':'#aaa',
                                 })
                         
             edges_text.append('textPath')

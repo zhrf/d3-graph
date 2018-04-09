@@ -1,0 +1,12 @@
+svg {
+    background-color:rgb(240, 248, 255);
+}
+.node-text {
+    font-size: 12px;
+    fill:gray;
+    font-weight: bold;
+}
+.edgelabel {
+    font-size:12px;
+    fill:#aaa;
+}
